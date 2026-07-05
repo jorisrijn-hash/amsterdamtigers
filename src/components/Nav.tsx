@@ -5,59 +5,39 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crest } from "./Crest";
+import { Scramble } from "./Scramble";
 import { NAV_LEFT, NAV_RIGHT, NAV_ALL } from "@/lib/site";
-import { EASE, EASE_OUT_CSS, LOADER_HOLD_MS } from "@/lib/motion";
+import { EASE, LOADER_HOLD_MS } from "@/lib/motion";
 
 function NavLink({
   href,
   label,
   active,
   revealed,
-  reduce,
   index,
 }: {
   href: string;
   label: string;
   active: boolean;
   revealed: boolean;
-  reduce: boolean;
   index: number;
 }) {
-  const shown = revealed || reduce;
-  const delay = reduce ? 0 : index * 55;
-
   return (
     <Link
       href={href}
       className="group relative block py-2 font-mono text-[0.72rem] font-medium uppercase tracking-[0.16em]"
       style={{ color: active ? "var(--paper)" : "var(--muted)" }}
     >
-      {/* entrance mask */}
-      <span className="block overflow-hidden">
+      {/* hover roll: outgoing label rolls up, bright duplicate rolls in */}
+      <span className="relative block overflow-hidden">
+        <span className="block transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-full group-focus-visible:-translate-y-full">
+          <Scramble text={label} play={revealed} delay={index * 70} />
+        </span>
         <span
-          className="block will-change-transform"
-          style={{
-            transform: shown ? "translateY(0)" : "translateY(120%)",
-            opacity: shown ? 1 : 0,
-            transition: reduce
-              ? "none"
-              : `transform 600ms ${EASE_OUT_CSS} ${delay}ms, opacity 500ms ease ${delay}ms`,
-          }}
+          aria-hidden
+          className="absolute inset-0 block translate-y-full text-paper transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-y-0 group-focus-visible:translate-y-0"
         >
-          {/* hover roll: outgoing label rolls up, bright duplicate rolls in */}
-          <span className="relative block overflow-hidden">
-            <span
-              className="block transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-full group-focus-visible:-translate-y-full"
-            >
-              {label}
-            </span>
-            <span
-              aria-hidden
-              className="absolute inset-0 block translate-y-full text-paper transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-y-0 group-focus-visible:translate-y-0"
-            >
-              {label}
-            </span>
-          </span>
+          {label}
         </span>
       </span>
 
@@ -137,13 +117,7 @@ export function Nav() {
         <ul className="hidden items-center gap-7 lg:flex">
           {NAV_LEFT.map((item, i) => (
             <li key={item.href}>
-              <NavLink
-                {...item}
-                active={pathname === item.href}
-                revealed={revealed}
-                reduce={reduce}
-                index={i}
-              />
+              <NavLink {...item} active={pathname === item.href} revealed={revealed} index={i} />
             </li>
           ))}
         </ul>
@@ -162,13 +136,7 @@ export function Nav() {
           <ul className="flex items-center gap-7">
             {NAV_RIGHT.map((item, i) => (
               <li key={item.href}>
-                <NavLink
-                  {...item}
-                  active={pathname === item.href}
-                  revealed={revealed}
-                  reduce={reduce}
-                  index={NAV_LEFT.length + i}
-                />
+                <NavLink {...item} active={pathname === item.href} revealed={revealed} index={NAV_LEFT.length + i} />
               </li>
             ))}
           </ul>

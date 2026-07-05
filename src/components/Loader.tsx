@@ -4,13 +4,18 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { EASE, LOADER_HOLD_MS, LOADER_EXIT_MS } from "@/lib/motion";
 
-const WORDS = ["Amsterdam", "Tigers"];
+const BRACKETS = [
+  "left-6 top-6 border-l border-t",
+  "right-6 top-6 border-r border-t",
+  "left-6 bottom-6 border-l border-b",
+  "right-6 bottom-6 border-r border-b",
+];
 
 /**
- * Launch intro: crest snaps in, the wordmark reveals line-by-line via a masked
- * slide-up, a red accent bar wipes in, then the whole panel lifts to hand off to
- * the hero video. Plays once per session (sessionStorage), locks scroll while
- * active, and degrades to a plain fade under prefers-reduced-motion.
+ * Launch intro: viewfinder corner brackets draw in, the hero poster expands
+ * from a small centered frame to full-bleed (clip-path inset), then the panel
+ * fades to hand off to the Hero video playing behind it. Plays once per session,
+ * locks scroll while active, degrades to a plain fade under reduced motion.
  */
 export function Loader() {
   const reduce = useReducedMotion();
@@ -18,12 +23,10 @@ export function Loader() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     if (sessionStorage.getItem("at:loaded")) {
       setActive(false);
       return;
     }
-
     document.body.style.overflow = "hidden";
     const id = window.setTimeout(() => setActive(false), LOADER_HOLD_MS);
     return () => window.clearTimeout(id);
@@ -38,52 +41,47 @@ export function Loader() {
     <AnimatePresence onExitComplete={release}>
       {active && (
         <motion.div
-          className="fixed inset-0 z-loader grid place-items-center bg-ink grain"
+          className="fixed inset-0 z-loader overflow-hidden bg-ink"
           initial={false}
-          exit={
-            reduce
-              ? { opacity: 0, transition: { duration: 0.3 } }
-              : { y: "-100%", transition: { duration: LOADER_EXIT_MS / 1000, ease: EASE.drawer } }
-          }
+          exit={{ opacity: 0, transition: { duration: LOADER_EXIT_MS / 1000, ease: EASE.out } }}
         >
-          <div className="flex flex-col items-center gap-6">
-            <motion.img
-              src="/media/crest-white.png"
-              alt="Amsterdam Tigers"
-              className="h-16 w-16 object-contain sm:h-20 sm:w-20"
+          {/* Poster expands from a centered frame to full-bleed */}
+          <motion.div
+            className="absolute inset-0"
+            initial={reduce ? { clipPath: "inset(0% 0%)" } : { clipPath: "inset(42% 44%)" }}
+            animate={{ clipPath: "inset(0% 0%)" }}
+            transition={{ duration: 0.85, ease: EASE.drawer, delay: reduce ? 0 : 0.25 }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/media/hero-poster.jpg"
+              alt=""
+              className="h-full w-full object-cover"
               draggable={false}
-              initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.8, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: EASE.out }}
             />
+            <div className="absolute inset-0 bg-[color-mix(in_oklch,var(--ink)_45%,transparent)]" />
+          </motion.div>
 
-            <div className="text-center leading-[0.88]">
-              {WORDS.map((word, i) => (
-                <span key={word} className="block overflow-hidden">
-                  <motion.span
-                    className="display block text-[clamp(2.5rem,11vw,6.5rem)] uppercase tracking-wordmark"
-                    initial={reduce ? { opacity: 0 } : { y: "115%" }}
-                    animate={reduce ? { opacity: 1 } : { y: "0%" }}
-                    transition={{
-                      duration: 0.6,
-                      ease: EASE.out,
-                      delay: reduce ? 0 : 0.2 + i * 0.1,
-                    }}
-                  >
-                    {word}
-                  </motion.span>
-                </span>
-              ))}
-            </div>
-
+          {/* Viewfinder corner brackets */}
+          {BRACKETS.map((pos, i) => (
             <motion.span
-              className="block h-[3px] w-40 origin-left bg-red"
-              initial={reduce ? { scaleX: 1 } : { scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.5, ease: EASE.out, delay: reduce ? 0 : 0.45 }}
+              key={pos}
               aria-hidden
+              className={`absolute h-9 w-9 border-white/60 ${pos}`}
+              initial={reduce ? { opacity: 0.6 } : { opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 0.6, scale: 1 }}
+              transition={{ duration: 0.4, ease: EASE.out, delay: reduce ? 0 : 0.08 * i }}
             />
-          </div>
+          ))}
+
+          {/* Thin red status line */}
+          <motion.span
+            aria-hidden
+            className="absolute bottom-6 left-1/2 block h-[2px] w-24 origin-center -translate-x-1/2 bg-red"
+            initial={reduce ? { scaleX: 1 } : { scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.5, ease: EASE.out, delay: reduce ? 0 : 0.5 }}
+          />
         </motion.div>
       )}
     </AnimatePresence>
