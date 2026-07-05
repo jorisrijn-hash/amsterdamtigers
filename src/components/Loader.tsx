@@ -1,21 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { EASE, LOADER_HOLD_MS, LOADER_EXIT_MS } from "@/lib/motion";
-
-const BRACKETS = [
-  "left-6 top-6 border-l border-t",
-  "right-6 top-6 border-r border-t",
-  "left-6 bottom-6 border-l border-b",
-  "right-6 bottom-6 border-r border-b",
-];
+import { motion, useReducedMotion } from "framer-motion";
+import { EASE, LOADER_HOLD_MS } from "@/lib/motion";
 
 /**
- * Launch intro: viewfinder corner brackets draw in, the hero poster expands
- * from a small centered frame to full-bleed (clip-path inset), then the panel
- * fades to hand off to the Hero video playing behind it. Plays once per session,
- * locks scroll while active, degrades to a plain fade under reduced motion.
+ * Logo-to-site intro: the crest scales in, holds, then zooms up and fades while
+ * the ink backdrop fades out, revealing the hero video underneath (as if the
+ * site opens out of the logo). Plays once per session, locks scroll while
+ * active, and degrades to a plain fade under prefers-reduced-motion.
+ *
+ * Timeline is internal (keyframes); the panel simply unmounts at LOADER_HOLD_MS,
+ * which stays the shared handoff point for the nav/hero reveals.
  */
 export function Loader() {
   const reduce = useReducedMotion();
@@ -23,67 +19,62 @@ export function Loader() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     if (sessionStorage.getItem("at:loaded")) {
       setActive(false);
       return;
     }
-    document.body.style.overflow = "hidden";
-    const id = window.setTimeout(() => setActive(false), LOADER_HOLD_MS);
-    return () => window.clearTimeout(id);
-  }, []);
 
-  const release = () => {
-    document.body.style.overflow = "";
-    if (typeof window !== "undefined") sessionStorage.setItem("at:loaded", "1");
-  };
+    document.body.style.overflow = "hidden";
+    const finish = () => {
+      document.body.style.overflow = "";
+      sessionStorage.setItem("at:loaded", "1");
+      setActive(false);
+    };
+    const id = window.setTimeout(finish, reduce ? 500 : LOADER_HOLD_MS);
+    return () => {
+      window.clearTimeout(id);
+      document.body.style.overflow = "";
+    };
+  }, [reduce]);
+
+  if (!active) return null;
 
   return (
-    <AnimatePresence onExitComplete={release}>
-      {active && (
-        <motion.div
-          className="fixed inset-0 z-loader overflow-hidden bg-ink"
-          initial={false}
-          exit={{ opacity: 0, transition: { duration: LOADER_EXIT_MS / 1000, ease: EASE.out } }}
-        >
-          {/* Poster expands from a centered frame to full-bleed */}
-          <motion.div
-            className="absolute inset-0"
-            initial={reduce ? { clipPath: "inset(0% 0%)" } : { clipPath: "inset(42% 44%)" }}
-            animate={{ clipPath: "inset(0% 0%)" }}
-            transition={{ duration: 0.85, ease: EASE.drawer, delay: reduce ? 0 : 0.25 }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/media/hero-poster.jpg"
-              alt=""
-              className="h-full w-full object-cover"
-              draggable={false}
-            />
-            <div className="absolute inset-0 bg-[color-mix(in_oklch,var(--ink)_45%,transparent)]" />
-          </motion.div>
+    <div className="pointer-events-none fixed inset-0 z-loader" aria-hidden>
+      {/* Ink backdrop fades out late to reveal the hero video underneath */}
+      <motion.div
+        className="absolute inset-0 bg-ink grain"
+        initial={{ opacity: 1 }}
+        animate={reduce ? { opacity: 0 } : { opacity: [1, 1, 0] }}
+        transition={
+          reduce
+            ? { duration: 0.4, ease: EASE.out }
+            : { duration: 1.25, times: [0, 0.6, 1], ease: EASE.out }
+        }
+      />
 
-          {/* Viewfinder corner brackets */}
-          {BRACKETS.map((pos, i) => (
-            <motion.span
-              key={pos}
-              aria-hidden
-              className={`absolute h-9 w-9 border-white/60 ${pos}`}
-              initial={reduce ? { opacity: 0.6 } : { opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 0.6, scale: 1 }}
-              transition={{ duration: 0.4, ease: EASE.out, delay: reduce ? 0 : 0.08 * i }}
-            />
-          ))}
-
-          {/* Thin red status line */}
-          <motion.span
-            aria-hidden
-            className="absolute bottom-6 left-1/2 block h-[2px] w-24 origin-center -translate-x-1/2 bg-red"
-            initial={reduce ? { scaleX: 1 } : { scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.5, ease: EASE.out, delay: reduce ? 0 : 0.5 }}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+      {/* Crest: scale-in -> hold -> zoom through + fade */}
+      <div className="absolute inset-0 grid place-items-center">
+        <motion.img
+          src="/media/crest-white.png"
+          alt=""
+          className="h-24 w-24 object-contain will-change-transform sm:h-28 sm:w-28"
+          draggable={false}
+          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.72, rotateY: -18 }}
+          animate={
+            reduce
+              ? { opacity: [0, 1, 0] }
+              : { opacity: [0, 1, 1, 0], scale: [0.72, 1, 1, 10], rotateY: [-18, 0, 0, 0] }
+          }
+          transition={
+            reduce
+              ? { duration: 0.5, ease: EASE.out }
+              : { duration: 1.25, times: [0, 0.16, 0.58, 1], ease: EASE.inOut }
+          }
+          style={{ transformPerspective: 900 }}
+        />
+      </div>
+    </div>
   );
 }
