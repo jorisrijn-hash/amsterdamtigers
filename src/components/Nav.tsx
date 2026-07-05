@@ -6,28 +6,67 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crest } from "./Crest";
 import { NAV_LEFT, NAV_RIGHT, NAV_ALL } from "@/lib/site";
-import { EASE } from "@/lib/motion";
+import { EASE, EASE_OUT_CSS, LOADER_HOLD_MS } from "@/lib/motion";
 
 function NavLink({
   href,
   label,
   active,
+  revealed,
+  reduce,
+  index,
 }: {
   href: string;
   label: string;
   active: boolean;
+  revealed: boolean;
+  reduce: boolean;
+  index: number;
 }) {
+  const shown = revealed || reduce;
+  const delay = reduce ? 0 : index * 55;
+
   return (
     <Link
       href={href}
-      className="group relative py-2 font-mono text-[0.72rem] font-medium uppercase tracking-[0.16em] transition-colors duration-200 ease-out"
+      className="group relative block py-2 font-mono text-[0.72rem] font-medium uppercase tracking-[0.16em]"
       style={{ color: active ? "var(--paper)" : "var(--muted)" }}
     >
-      <span className="transition-colors group-hover:text-paper">{label}</span>
+      {/* entrance mask */}
+      <span className="block overflow-hidden">
+        <span
+          className="block will-change-transform"
+          style={{
+            transform: shown ? "translateY(0)" : "translateY(120%)",
+            opacity: shown ? 1 : 0,
+            transition: reduce
+              ? "none"
+              : `transform 600ms ${EASE_OUT_CSS} ${delay}ms, opacity 500ms ease ${delay}ms`,
+          }}
+        >
+          {/* hover roll: outgoing label rolls up, bright duplicate rolls in */}
+          <span className="relative block overflow-hidden">
+            <span
+              className="block transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-full group-focus-visible:-translate-y-full"
+            >
+              {label}
+            </span>
+            <span
+              aria-hidden
+              className="absolute inset-0 block translate-y-full text-paper transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-y-0 group-focus-visible:translate-y-0"
+            >
+              {label}
+            </span>
+          </span>
+        </span>
+      </span>
+
+      {/* underline: full when active, wipes in on hover otherwise */}
       <span
-        className="absolute -bottom-0.5 left-0 h-px bg-red transition-[width] duration-300 ease-out"
-        style={{ width: active ? "100%" : "0%" }}
         aria-hidden
+        className={`absolute -bottom-0.5 left-0 h-px bg-red transition-[width] duration-300 ease-out ${
+          active ? "w-full" : "w-0 group-hover:w-full group-focus-visible:w-full"
+        }`}
       />
     </Link>
   );
@@ -35,10 +74,11 @@ function NavLink({
 
 export function Nav() {
   const pathname = usePathname();
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotion() ?? false;
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
     let raf = 0;
@@ -53,6 +93,24 @@ export function Nav() {
       cancelAnimationFrame(raf);
     };
   }, []);
+
+  // Reveal the nav links once. When the loader plays (first visit this session),
+  // wait for the curtain so the entrance is visible; otherwise reveal promptly.
+  useEffect(() => {
+    if (reduce) {
+      setRevealed(true);
+      return;
+    }
+    let loaderPlaying = false;
+    try {
+      loaderPlaying = !sessionStorage.getItem("at:loaded");
+    } catch {
+      /* sessionStorage unavailable */
+    }
+    const delay = loaderPlaying ? LOADER_HOLD_MS - 150 : 150;
+    const id = window.setTimeout(() => setRevealed(true), delay);
+    return () => window.clearTimeout(id);
+  }, [reduce]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -77,9 +135,15 @@ export function Nav() {
       <nav className="shell flex h-16 items-center justify-between md:h-[4.5rem]">
         {/* Left links (desktop) */}
         <ul className="hidden items-center gap-7 lg:flex">
-          {NAV_LEFT.map((item) => (
+          {NAV_LEFT.map((item, i) => (
             <li key={item.href}>
-              <NavLink {...item} active={pathname === item.href} />
+              <NavLink
+                {...item}
+                active={pathname === item.href}
+                revealed={revealed}
+                reduce={reduce}
+                index={i}
+              />
             </li>
           ))}
         </ul>
@@ -96,9 +160,15 @@ export function Nav() {
         {/* Right links + login (desktop) */}
         <div className="hidden items-center gap-7 lg:flex">
           <ul className="flex items-center gap-7">
-            {NAV_RIGHT.map((item) => (
+            {NAV_RIGHT.map((item, i) => (
               <li key={item.href}>
-                <NavLink {...item} active={pathname === item.href} />
+                <NavLink
+                  {...item}
+                  active={pathname === item.href}
+                  revealed={revealed}
+                  reduce={reduce}
+                  index={NAV_LEFT.length + i}
+                />
               </li>
             ))}
           </ul>

@@ -7,6 +7,13 @@ export const EASE = {
   drawer: [0.32, 0.72, 0, 1],
 } as const;
 
+/** CSS cubic-bezier string for EASE.out, for use in inline/className transitions. */
+export const EASE_OUT_CSS = "cubic-bezier(0.23,1,0.32,1)";
+
+/** Launch/loader timing, shared so the nav entrance can't drift from the curtain. */
+export const LOADER_HOLD_MS = 1400;
+export const LOADER_EXIT_MS = 600;
+
 /** Scroll-reveal: fade + short lift. Baseline is visible; this only enhances. */
 export const reveal: Variants = {
   hidden: { opacity: 0, y: 18 },
