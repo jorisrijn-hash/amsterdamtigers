@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Crest } from "./Crest";
+import { LanguageToggle } from "./LanguageToggle";
 import { CLUB, NAV_ALL } from "@/lib/site";
 
 export function Footer() {
@@ -51,9 +52,12 @@ export function Footer() {
         <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-2">
           &copy; {new Date().getFullYear()} {CLUB.name}
         </span>
-        <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-2">
-          {CLUB.domain}
-        </span>
+        <div className="flex items-center gap-6">
+          <LanguageToggle />
+          <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-2">
+            {CLUB.domain}
+          </span>
+        </div>
       </div>
     </footer>
   );

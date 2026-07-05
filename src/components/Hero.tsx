@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { Crest } from "./Crest";
-import { CLUB } from "@/lib/site";
+import { useI18n } from "./I18nProvider";
 
 export function Hero() {
+  const { t } = useI18n();
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const [videoOk, setVideoOk] = useState(true);
@@ -58,15 +59,15 @@ export function Hero() {
           Amsterdam Tigers
         </h1>
         <p className="mt-3 font-mono text-xs uppercase tracking-[0.28em] text-muted">
-          {CLUB.tagline}
+          {t("hero.tagline")}
         </p>
 
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <Link href="/wedstrijden" className="btn">
-            Tickets
+            {t("hero.tickets")}
           </Link>
           <Link href="/team" className="btn-ghost inline-flex items-center gap-2 px-6 py-[0.95rem] font-mono text-[0.78rem] uppercase tracking-[0.14em]">
-            Bekijk het team <span aria-hidden>&rarr;</span>
+            {t("hero.viewTeam")} <span aria-hidden>&rarr;</span>
           </Link>
         </div>
       </motion.div>
@@ -74,7 +75,7 @@ export function Hero() {
       {/* Scroll cue */}
       <div className="absolute bottom-24 left-1/2 z-raised flex -translate-x-1/2 flex-col items-center gap-2 md:bottom-16">
         <span className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-muted-2">
-          Scroll
+          {t("hero.scroll")}
         </span>
         <motion.span
           className="block h-8 w-px bg-[linear-gradient(180deg,var(--muted-2),transparent)]"

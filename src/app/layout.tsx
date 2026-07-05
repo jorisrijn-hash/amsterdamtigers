@@ -7,6 +7,8 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { StatusBar } from "@/components/StatusBar";
 import { CustomCursor } from "@/components/CustomCursor";
+import { I18nProvider } from "@/components/I18nProvider";
+import { Analytics } from "@vercel/analytics/next";
 import { CLUB, SITE_URL } from "@/lib/site";
 
 const archivo = Archivo({
@@ -116,16 +118,19 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <SmoothScroll>
-          <Loader />
-          <Nav />
-          <div className="pb-14">
-            <main>{children}</main>
-            <Footer />
-          </div>
-          <StatusBar />
-        </SmoothScroll>
-        <CustomCursor />
+        <I18nProvider>
+          <SmoothScroll>
+            <Loader />
+            <Nav />
+            <div className="pb-14">
+              <main>{children}</main>
+              <Footer />
+            </div>
+            <StatusBar />
+          </SmoothScroll>
+          <CustomCursor />
+        </I18nProvider>
+        <Analytics />
       </body>
     </html>
   );

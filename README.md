@@ -26,9 +26,8 @@ npm start
 
 - Next.js 14 App Router + TypeScript
 - Tailwind CSS with OKLCH design tokens (see `src/app/globals.css`)
-- Framer Motion (loader, hero parallax, 3D card tilt, reveals, custom cursor)
+- Framer Motion (loader, hero parallax, pinned horizontal roster, 3D card tilt, reveals, custom cursor)
 - Lenis smooth scroll (auto-disabled under `prefers-reduced-motion`)
-- `PixelCard` (adapted from React Bits, MIT) on the social feed tiles
 - Custom cursor (dot + trailing ring, desktop fine-pointer only)
 
 ## Structure
@@ -108,3 +107,39 @@ git push -u origin main
 
 Post-deploy: submit the sitemap in Google Search Console and confirm the
 JSON-LD in the Rich Results Test.
+
+## Modules (added)
+
+All new features are self-contained with typed placeholder data and clear swap
+points. No external accounts are required to build or run.
+
+- **Match center** (`/wedstrijden`) - fixtures, results, standings and a live
+  next-game countdown. Data in `src/lib/matches.ts` (`TODO(swap)` -> feed/CMS).
+  The bottom status bar shows the next fixture.
+- **Webshop** (`/shop`) - product grid with prices; data in `src/lib/shop.ts`.
+  Cards fall back to a crest placeholder until real images exist.
+- **Partners / sponsor ROI** (`/partner`) - tiered sponsors, value props, and a
+  "word partner" CTA. Sponsor logo clicks fire a `sponsor_click` analytics event
+  (`src/components/SponsorLink.tsx`) for sponsor reporting. Data in
+  `src/lib/partners.ts`.
+- **Newsletter** (home) and **membership** (`/vereniging`) - one reusable
+  `SignupForm`. Real POST when the endpoint env var is set, optimistic success
+  otherwise (demo mode).
+- **Analytics** - `@vercel/analytics` (`<Analytics/>` in the layout); enable
+  Web Analytics in the Vercel project to collect data. Custom events via
+  `src/lib/analytics.ts`.
+- **i18n scaffold** - NL default + EN, `src/lib/i18n.ts` + `I18nProvider` +
+  `LanguageToggle` (in the footer). Wired into the hero/newsletter; extend by
+  adding keys and swapping literals for `t("key")`.
+
+### Environment variables (all optional)
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Canonical/OG base once a custom domain is live |
+| `NEXT_PUBLIC_NEWSLETTER_ENDPOINT` | POST target for newsletter signups |
+| `NEXT_PUBLIC_MEMBERSHIP_ENDPOINT` | POST target for membership signups |
+| `NEXT_PUBLIC_SHOP_URL` | External store base for product deep links |
+| `NEXT_PUBLIC_TICKETS_URL` | External ticketing link |
+
+Unset endpoints run in demo mode (form shows success, no network call).

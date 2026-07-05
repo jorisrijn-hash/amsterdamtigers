@@ -1,6 +1,5 @@
 import { CLUB } from "@/lib/site";
 import { Reveal } from "./Reveal";
-import { PixelCard } from "./PixelCard";
 
 /**
  * Feed integration:
@@ -28,13 +27,13 @@ function FeedTile({ tile }: { tile: Tile }) {
       rel="noreferrer"
       className="group block"
     >
-      <PixelCard variant="tiger" className="aspect-square bg-ink-2">
+      <div className="relative aspect-square overflow-hidden bg-ink-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={tile.image}
           alt=""
           loading="lazy"
-          className="absolute inset-0 z-0 h-full w-full object-cover object-top"
+          className="absolute inset-0 z-0 h-full w-full object-cover object-top transition-[filter] duration-300 ease-out group-hover:brightness-110"
           draggable={false}
         />
         <span className="absolute left-3 top-3 z-10 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-white/80">
@@ -58,7 +57,7 @@ function FeedTile({ tile }: { tile: Tile }) {
             Bekijk op Instagram &rarr;
           </span>
         </div>
-      </PixelCard>
+      </div>
     </a>
   );
 }

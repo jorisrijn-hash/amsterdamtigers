@@ -1,3 +1,7 @@
+"use client";
+
+import { useReducedMotion } from "framer-motion";
+
 const PARTNERS = [
   { src: "/media/partners/warrior.webp", alt: "Warrior" },
   { src: "/media/partners/osk-advocaten.webp", alt: "OSK Advocaten" },
@@ -5,35 +9,77 @@ const PARTNERS = [
   { src: "/media/partners/jaap-eden.webp", alt: "Jaap Eden IJsbanen" },
 ];
 
+// Repeat so one group comfortably exceeds the widest viewport; two identical
+// groups translate by exactly -100% for a seamless, gap-free loop.
+const GROUP = Array.from({ length: 4 }).flatMap(() => PARTNERS);
+
+function Logo({
+  item,
+  decorative = false,
+}: {
+  item: { src: string; alt: string };
+  decorative?: boolean;
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={item.src}
+      alt={decorative ? "" : item.alt}
+      aria-hidden={decorative}
+      className="h-8 w-auto max-w-[9rem] shrink-0 object-contain opacity-60 transition-opacity duration-200 ease-out hover:opacity-100 md:h-10"
+      draggable={false}
+    />
+  );
+}
+
 export function Partners() {
-  // duplicated once for a seamless loop
-  const items = [...PARTNERS, ...PARTNERS];
+  const reduce = useReducedMotion();
+
+  if (reduce) {
+    return (
+      <section
+        className="relative overflow-hidden border-y border-line py-10"
+        aria-label="Partners"
+      >
+        <ul className="shell flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+          {PARTNERS.map((p, i) => (
+            <li key={i}>
+              <Logo item={p} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
+
   return (
     <section
       className="relative overflow-hidden border-y border-line py-10"
       aria-label="Partners"
     >
-      <div className="marquee flex w-max items-center gap-20 whitespace-nowrap px-10">
-        {items.map((p, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
-            src={p.src}
-            alt={i < PARTNERS.length ? p.alt : ""}
-            aria-hidden={i >= PARTNERS.length}
-            className="h-8 w-auto max-w-[10rem] object-contain opacity-60 transition-opacity duration-200 ease-out hover:opacity-100 md:h-10"
-            draggable={false}
-          />
-        ))}
+      <div className="mq flex w-max">
+        <ul className="mq-group flex shrink-0 items-center">
+          {GROUP.map((p, i) => (
+            <li key={`a-${i}`} className="px-8 md:px-10">
+              <Logo item={p} />
+            </li>
+          ))}
+        </ul>
+        <ul className="mq-group flex shrink-0 items-center" aria-hidden>
+          {GROUP.map((p, i) => (
+            <li key={`b-${i}`} className="px-8 md:px-10">
+              <Logo item={p} decorative />
+            </li>
+          ))}
+        </ul>
       </div>
 
       <style>{`
-        .marquee { animation: marquee 34s linear infinite; }
-        @keyframes marquee {
+        .mq-group { animation: mq-scroll 45s linear infinite; will-change: transform; }
+        @keyframes mq-scroll {
           from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
+          to   { transform: translateX(-100%); }
         }
-        @media (prefers-reduced-motion: reduce) { .marquee { animation: none; } }
       `}</style>
     </section>
   );

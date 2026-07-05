@@ -1,7 +1,22 @@
 import Link from "next/link";
-import { NEXT_GAME } from "@/lib/site";
+import { getNextMatch, isClub } from "@/lib/matches";
+
+function nextGameLabel(): string {
+  const next = getNextMatch();
+  if (!next) return "Seizoen afgelopen";
+  const opponent = isClub(next.home) ? next.away : next.home;
+  const where = isClub(next.home) ? "thuis" : "uit";
+  const when = new Intl.DateTimeFormat("nl-NL", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(next.date));
+  return `${opponent} (${where}) - ${when}`;
+}
 
 export function StatusBar() {
+  const label = nextGameLabel();
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-sticky border-t border-line"
@@ -14,10 +29,10 @@ export function StatusBar() {
           </span>
           <span className="hidden h-4 w-px bg-line sm:block" aria-hidden />
           <span className="truncate font-mono text-[0.72rem] uppercase tracking-[0.14em] text-muted">
-            {NEXT_GAME.status}
+            {label}
           </span>
         </div>
-        <Link href={NEXT_GAME.ticketsHref} className="btn shrink-0 px-5 py-2.5 text-[0.72rem]">
+        <Link href="/wedstrijden" className="btn shrink-0 px-5 py-2.5 text-[0.72rem]">
           Tickets
         </Link>
       </div>
