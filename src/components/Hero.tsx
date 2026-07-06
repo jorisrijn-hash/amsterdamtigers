@@ -1,35 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { Crest } from "./Crest";
 import { useI18n } from "./I18nProvider";
-import { EASE, LOADER_HOLD_MS } from "@/lib/motion";
 
 export function Hero() {
   const { t } = useI18n();
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const [videoOk, setVideoOk] = useState(true);
-  const [revealed, setRevealed] = useState(false);
-
-  // Reveal hero content after the launch intro (mirrors the nav timing).
-  useEffect(() => {
-    if (reduce) {
-      setRevealed(true);
-      return;
-    }
-    let loaderPlaying = false;
-    try {
-      loaderPlaying = !sessionStorage.getItem("at:loaded");
-    } catch {
-      /* sessionStorage unavailable */
-    }
-    const delay = loaderPlaying ? LOADER_HOLD_MS - 100 : 100;
-    const id = window.setTimeout(() => setRevealed(true), delay);
-    return () => window.clearTimeout(id);
-  }, [reduce]);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -73,33 +54,22 @@ export function Hero() {
         className="relative z-raised flex flex-col items-center px-6 text-center"
         style={reduce ? undefined : { y: contentY, opacity: contentOpacity }}
       >
-        <motion.div
-          className="flex flex-col items-center"
-          initial={reduce ? false : { opacity: 0, y: 24, scale: 0.97 }}
-          animate={
-            revealed || reduce
-              ? { opacity: 1, y: 0, scale: 1 }
-              : { opacity: 0, y: 24, scale: 0.97 }
-          }
-          transition={{ duration: 0.7, ease: EASE.out }}
-        >
-          <Crest className="h-20 w-20 text-paper sm:h-24 sm:w-24" />
-          <h1 className="display mt-6 text-[clamp(2.75rem,11vw,6rem)] tracking-wordmark">
-            Amsterdam Tigers
-          </h1>
-          <p className="mt-3 font-mono text-xs uppercase tracking-[0.28em] text-muted">
-            {t("hero.tagline")}
-          </p>
+        <Crest className="h-20 w-20 text-paper sm:h-24 sm:w-24" />
+        <h1 className="display mt-6 text-[clamp(2.75rem,11vw,6rem)] tracking-wordmark">
+          Amsterdam Tigers
+        </h1>
+        <p className="mt-3 font-mono text-xs uppercase tracking-[0.28em] text-muted">
+          {t("hero.tagline")}
+        </p>
 
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/wedstrijden" className="btn">
-              {t("hero.tickets")}
-            </Link>
-            <Link href="/team" className="btn-ghost inline-flex items-center gap-2 px-6 py-[0.95rem] font-mono text-[0.78rem] uppercase tracking-[0.14em]">
-              {t("hero.viewTeam")} <span aria-hidden>&rarr;</span>
-            </Link>
-          </div>
-        </motion.div>
+        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <Link href="/wedstrijden" className="btn">
+            {t("hero.tickets")}
+          </Link>
+          <Link href="/team" className="btn-ghost inline-flex items-center gap-2 px-6 py-[0.95rem] font-mono text-[0.78rem] uppercase tracking-[0.14em]">
+            {t("hero.viewTeam")} <span aria-hidden>&rarr;</span>
+          </Link>
+        </div>
       </motion.div>
 
       {/* Scroll cue */}
