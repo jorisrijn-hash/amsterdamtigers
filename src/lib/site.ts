@@ -24,17 +24,17 @@ export const SITE_URL: string =
 
 /** Nav order mirrors the live site, split around the centered crest. */
 export const NAV_LEFT = [
-  { label: "Nieuws", href: "/nieuws" },
-  { label: "Team", href: "/team" },
-  { label: "Wedstrijden", href: "/wedstrijden" },
-  { label: "Regels", href: "/regels" },
+  { label: "Nieuws", href: "/nieuws", tKey: "nav.news" },
+  { label: "Team", href: "/team", tKey: "nav.team" },
+  { label: "Wedstrijden", href: "/wedstrijden", tKey: "nav.matches" },
+  { label: "Regels", href: "/regels", tKey: "nav.rules" },
 ] as const;
 
 export const NAV_RIGHT = [
-  { label: "History", href: "/history" },
-  { label: "Shop", href: "/shop" },
-  { label: "Partner", href: "/partner" },
-  { label: "Contact", href: "/contact" },
+  { label: "History", href: "/history", tKey: "nav.history" },
+  { label: "Shop", href: "/shop", tKey: "nav.shop" },
+  { label: "Partner", href: "/partner", tKey: "nav.partner" },
+  { label: "Contact", href: "/contact", tKey: "nav.contact" },
 ] as const;
 
 export const NAV_ALL = [...NAV_LEFT, ...NAV_RIGHT];

@@ -1,30 +1,48 @@
+"use client";
+
 import Link from "next/link";
 import { Reveal } from "./Reveal";
+import { useI18n } from "./I18nProvider";
+import type { Locale } from "@/lib/i18n";
 
-const NEWS = [
-  { date: "2026.03.28", title: "Technische staf Amsterdam Tigers compleet", tag: "Club" },
-  { date: "2026.03.14", title: "Player announcement: Soro Sorokin tekent bij", tag: "Transfer" },
-  { date: "2026.02.22", title: "Terugblik op een historisch seizoen", tag: "Wedstrijd" },
-];
+type NewsItem = { date: string; title: string; tag: string };
+
+// Placeholder content per locale (swap for CMS content later).
+const NEWS: Record<Locale, NewsItem[]> = {
+  nl: [
+    { date: "2026.03.28", title: "Technische staf Amsterdam Tigers compleet", tag: "Club" },
+    { date: "2026.03.14", title: "Player announcement: Soro Sorokin tekent bij", tag: "Transfer" },
+    { date: "2026.02.22", title: "Terugblik op een historisch seizoen", tag: "Wedstrijd" },
+  ],
+  en: [
+    { date: "2026.03.28", title: "Amsterdam Tigers coaching staff complete", tag: "Club" },
+    { date: "2026.03.14", title: "Player announcement: Soro Sorokin signs", tag: "Transfer" },
+    { date: "2026.02.22", title: "Looking back on a historic season", tag: "Match" },
+  ],
+};
 
 export function NewsStrip() {
+  const { t, locale } = useI18n();
+  const items = NEWS[locale];
+
   return (
     <section className="relative py-24 md:py-32">
       <div className="shell">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <h2 className="display text-[clamp(2rem,6vw,4rem)]">
-            Nieuws<span className="text-red">.</span>
+            {t("news.heading")}
+            <span className="text-red">.</span>
           </h2>
           <Link
             href="/nieuws"
             className="btn-ghost inline-flex items-center gap-2 px-5 py-3 font-mono text-[0.74rem] uppercase tracking-[0.14em]"
           >
-            Alle updates <span aria-hidden>&rarr;</span>
+            {t("news.cta")} <span aria-hidden>&rarr;</span>
           </Link>
         </Reveal>
 
         <ul className="mt-10 border-t border-line">
-          {NEWS.map((item, i) => (
+          {items.map((item, i) => (
             <Reveal as="li" key={item.title} delay={i * 0.04}>
               <Link
                 href="/nieuws"

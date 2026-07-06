@@ -6,8 +6,11 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crest } from "./Crest";
 import { Scramble } from "./Scramble";
+import { LanguageToggle } from "./LanguageToggle";
+import { useI18n } from "./I18nProvider";
 import { NAV_LEFT, NAV_RIGHT, NAV_ALL } from "@/lib/site";
 import { EASE, LOADER_HOLD_MS } from "@/lib/motion";
+import type { TranslationKey } from "@/lib/i18n";
 
 function NavLink({
   href,
@@ -28,7 +31,6 @@ function NavLink({
       className="group relative block py-2 font-mono text-[0.72rem] font-medium uppercase tracking-[0.16em]"
       style={{ color: active ? "var(--paper)" : "var(--muted)" }}
     >
-      {/* hover roll: outgoing label rolls up, bright duplicate rolls in */}
       <span className="relative block overflow-hidden">
         <span className="block transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-full group-focus-visible:-translate-y-full">
           <Scramble text={label} play={revealed} delay={index * 70} />
@@ -40,8 +42,6 @@ function NavLink({
           {label}
         </span>
       </span>
-
-      {/* underline: full when active, wipes in on hover otherwise */}
       <span
         aria-hidden
         className={`absolute -bottom-0.5 left-0 h-px bg-red transition-[width] duration-300 ease-out ${
@@ -55,6 +55,7 @@ function NavLink({
 export function Nav() {
   const pathname = usePathname();
   const reduce = useReducedMotion() ?? false;
+  const { t } = useI18n();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -74,8 +75,6 @@ export function Nav() {
     };
   }, []);
 
-  // Reveal the nav links once. When the loader plays (first visit this session),
-  // wait for the curtain so the entrance is visible; otherwise reveal promptly.
   useEffect(() => {
     if (reduce) {
       setRevealed(true);
@@ -112,60 +111,77 @@ export function Nav() {
         borderBottom: solid ? "1px solid var(--hairline)" : "1px solid transparent",
       }}
     >
-      <nav className="shell flex h-16 items-center justify-between md:h-[4.5rem]">
-        {/* Left links (desktop) */}
-        <ul className="hidden items-center gap-7 lg:flex">
-          {NAV_LEFT.map((item, i) => (
-            <li key={item.href}>
-              <NavLink {...item} active={pathname === item.href} revealed={revealed} index={i} />
-            </li>
-          ))}
-        </ul>
+      <nav className="shell grid h-16 grid-cols-[1fr_auto_1fr] items-center md:h-[4.5rem]">
+        {/* Left column */}
+        <div className="flex items-center">
+          <ul className="hidden items-center gap-7 lg:flex">
+            {NAV_LEFT.map((item, i) => (
+              <li key={item.href}>
+                <NavLink
+                  href={item.href}
+                  label={t(item.tKey as TranslationKey)}
+                  active={pathname === item.href}
+                  revealed={revealed}
+                  index={i}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {/* Centered crest */}
+        {/* Center column: crest */}
         <Link
           href="/"
           aria-label="Amsterdam Tigers, home"
-          className="text-paper lg:absolute lg:left-1/2 lg:-translate-x-1/2"
+          className="justify-self-center text-paper"
         >
           <Crest className="h-9 w-9 md:h-10 md:w-10" />
         </Link>
 
-        {/* Right links + login (desktop) */}
-        <div className="hidden items-center gap-7 lg:flex">
-          <ul className="flex items-center gap-7">
+        {/* Right column */}
+        <div className="flex items-center justify-end gap-6">
+          <ul className="hidden items-center gap-7 lg:flex">
             {NAV_RIGHT.map((item, i) => (
               <li key={item.href}>
-                <NavLink {...item} active={pathname === item.href} revealed={revealed} index={NAV_LEFT.length + i} />
+                <NavLink
+                  href={item.href}
+                  label={t(item.tKey as TranslationKey)}
+                  active={pathname === item.href}
+                  revealed={revealed}
+                  index={NAV_LEFT.length + i}
+                />
               </li>
             ))}
           </ul>
+
+          <LanguageToggle className="hidden lg:inline-flex" />
+
           <Link
             href="/vereniging"
-            className="btn-ghost inline-flex items-center gap-2 px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.16em]"
+            className="btn-ghost hidden items-center gap-2 px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.16em] lg:inline-flex"
           >
-            Vereniging
+            {t("nav.association")}
             <span aria-hidden>&rarr;</span>
           </Link>
-        </div>
 
-        {/* Mobile toggle */}
-        <button
-          type="button"
-          aria-label={open ? "Menu sluiten" : "Menu openen"}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="relative z-overlay flex h-10 w-10 flex-col items-center justify-center gap-[5px] lg:hidden"
-        >
-          <span
-            className="h-px w-6 bg-paper transition-transform duration-300 ease-out"
-            style={{ transform: open ? "translateY(3px) rotate(45deg)" : "none" }}
-          />
-          <span
-            className="h-px w-6 bg-paper transition-transform duration-300 ease-out"
-            style={{ transform: open ? "translateY(-3px) rotate(-45deg)" : "none" }}
-          />
-        </button>
+          {/* Mobile toggle */}
+          <button
+            type="button"
+            aria-label={open ? "Menu sluiten" : "Menu openen"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="relative z-overlay flex h-10 w-10 flex-col items-center justify-center gap-[5px] lg:hidden"
+          >
+            <span
+              className="h-px w-6 bg-paper transition-transform duration-300 ease-out"
+              style={{ transform: open ? "translateY(3px) rotate(45deg)" : "none" }}
+            />
+            <span
+              className="h-px w-6 bg-paper transition-transform duration-300 ease-out"
+              style={{ transform: open ? "translateY(-3px) rotate(-45deg)" : "none" }}
+            />
+          </button>
+        </div>
       </nav>
 
       {/* Mobile fullscreen menu */}
@@ -179,6 +195,9 @@ export function Nav() {
             transition={{ duration: 0.25, ease: EASE.out }}
           >
             <div className="shell flex h-full flex-col justify-center gap-1 pt-16">
+              <div className="mb-6">
+                <LanguageToggle />
+              </div>
               {NAV_ALL.map((item, i) => (
                 <motion.div
                   key={item.href}
@@ -190,7 +209,7 @@ export function Nav() {
                     href={item.href}
                     className="display block py-2 text-[13vw] leading-none text-paper"
                   >
-                    {item.label}
+                    {t(item.tKey as TranslationKey)}
                   </Link>
                 </motion.div>
               ))}
@@ -201,7 +220,7 @@ export function Nav() {
                 className="mt-6"
               >
                 <Link href="/vereniging" className="btn">
-                  Vereniging login <span aria-hidden>&rarr;</span>
+                  {t("nav.association")} <span aria-hidden>&rarr;</span>
                 </Link>
               </motion.div>
             </div>

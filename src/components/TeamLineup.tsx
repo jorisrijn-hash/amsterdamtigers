@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { LINEUP } from "@/lib/players";
 import { PlayerCard } from "./PlayerCard";
+import { useI18n } from "./I18nProvider";
 
 /**
  * Pinned horizontal scroll: the section is `100vh + trackDistance` tall; the
@@ -16,6 +17,7 @@ import { PlayerCard } from "./PlayerCard";
  */
 export function TeamLineup() {
   const reduce = useReducedMotion();
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
@@ -55,14 +57,14 @@ export function TeamLineup() {
   const Header = (
     <div className="shell flex flex-wrap items-end justify-between gap-6 pt-24 md:pt-28">
       <div>
-        <span className="label">De selectie</span>
-        <h2 className="display mt-3 text-[clamp(2.25rem,6vw,4rem)]">The Team</h2>
+        <span className="label">{t("team.label")}</span>
+        <h2 className="display mt-3 text-[clamp(2.25rem,6vw,4rem)]">{t("team.title")}</h2>
       </div>
       <Link
         href="/team"
         className="btn-ghost inline-flex items-center gap-2 px-5 py-3 font-mono text-[0.74rem] uppercase tracking-[0.14em]"
       >
-        Meet the team <span aria-hidden>&rarr;</span>
+        {t("team.cta")} <span aria-hidden>&rarr;</span>
       </Link>
     </div>
   );

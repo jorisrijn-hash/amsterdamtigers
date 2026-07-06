@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { Crest } from "./Crest";
 import { LanguageToggle } from "./LanguageToggle";
+import { useI18n } from "./I18nProvider";
 import { CLUB, NAV_ALL } from "@/lib/site";
+import type { TranslationKey } from "@/lib/i18n";
 
 export function Footer() {
+  const { t } = useI18n();
+
   return (
     <footer className="relative border-t border-line pb-24 pt-20">
       <div className="shell grid gap-12 md:grid-cols-[1.4fr_1fr_1fr]">
@@ -13,7 +19,7 @@ export function Footer() {
             <span className="display text-lg tracking-wordmark">Amsterdam Tigers</span>
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-            {CLUB.tagline}. IJshockey op de Jaap Edenbaan, hartje Amsterdam.
+            {t("footer.tagline")}
           </p>
         </div>
 
@@ -24,13 +30,13 @@ export function Footer() {
               href={item.href}
               className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-muted transition-colors duration-200 ease-out hover:text-paper"
             >
-              {item.label}
+              {t(item.tKey as TranslationKey)}
             </Link>
           ))}
         </nav>
 
         <div className="flex flex-col gap-3">
-          <span className="label">Volg</span>
+          <span className="label">{t("footer.follow")}</span>
           <a
             href={CLUB.instagram}
             target="_blank"
@@ -43,7 +49,7 @@ export function Footer() {
             href="/vereniging"
             className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-muted transition-colors duration-200 ease-out hover:text-paper"
           >
-            Vereniging login
+            {t("footer.login")}
           </Link>
         </div>
       </div>

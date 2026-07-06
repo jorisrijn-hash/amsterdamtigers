@@ -1,32 +1,42 @@
+"use client";
+
 import { CLUB } from "@/lib/site";
 import { Reveal } from "./Reveal";
+import { useI18n } from "./I18nProvider";
+import type { Locale } from "@/lib/i18n";
 
 /**
  * Feed integration:
  *   The tiles below are a graceful fallback. To wire the real feed, drop in a
  *   Behold (behold.so) or Elfsight widget where marked, or use Instagram oEmbed.
- *   Each tile already links to the profile so nothing dead-ends before then.
  */
 
-type Tile = { kind: "Reel" | "Post" | "Announcement"; caption: string; image: string };
+type Tile = {
+  kind: "Reel" | "Post" | "Announcement";
+  caption: Record<Locale, string>;
+  image: string;
+};
 
 const TILES: Tile[] = [
-  { kind: "Announcement", caption: "Player announcement", image: "/media/players/justin-van-baarsen.webp" },
-  { kind: "Reel", caption: "Matchday", image: "/media/action-game.webp" },
-  { kind: "Post", caption: "Selectie compleet", image: "/media/players/nils-schramm.webp" },
-  { kind: "Reel", caption: "Behind the glass", image: "/media/action-goal.webp" },
-  { kind: "Post", caption: "Faceoff", image: "/media/players/mick-vastenhouw.webp" },
-  { kind: "Announcement", caption: "New signing", image: "/media/players/samu-poutanen.webp" },
+  { kind: "Announcement", caption: { nl: "Player announcement", en: "Player announcement" }, image: "/media/players/justin-van-baarsen.webp" },
+  { kind: "Reel", caption: { nl: "Wedstrijddag", en: "Matchday" }, image: "/media/action-game.webp" },
+  { kind: "Post", caption: { nl: "Selectie compleet", en: "Roster complete" }, image: "/media/players/nils-schramm.webp" },
+  { kind: "Reel", caption: { nl: "Behind the glass", en: "Behind the glass" }, image: "/media/action-goal.webp" },
+  { kind: "Post", caption: { nl: "Face-off", en: "Faceoff" }, image: "/media/players/mick-vastenhouw.webp" },
+  { kind: "Announcement", caption: { nl: "Nieuwe aanwinst", en: "New signing" }, image: "/media/players/samu-poutanen.webp" },
 ];
 
-function FeedTile({ tile }: { tile: Tile }) {
+function FeedTile({
+  tile,
+  caption,
+  follow,
+}: {
+  tile: Tile;
+  caption: string;
+  follow: string;
+}) {
   return (
-    <a
-      href={CLUB.instagram}
-      target="_blank"
-      rel="noreferrer"
-      className="group block"
-    >
+    <a href={CLUB.instagram} target="_blank" rel="noreferrer" className="group block">
       <div className="relative aspect-square overflow-hidden bg-ink-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -52,9 +62,9 @@ function FeedTile({ tile }: { tile: Tile }) {
         )}
 
         <div className="absolute inset-x-0 bottom-0 z-10 bg-[linear-gradient(180deg,transparent,rgba(8,10,12,0.92))] p-3 pt-12">
-          <p className="display text-sm leading-tight">{tile.caption}</p>
+          <p className="display text-sm leading-tight">{caption}</p>
           <span className="mt-1 block font-mono text-[0.56rem] uppercase tracking-[0.18em] text-muted opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100">
-            Bekijk op Instagram &rarr;
+            {follow} &rarr;
           </span>
         </div>
       </div>
@@ -63,6 +73,8 @@ function FeedTile({ tile }: { tile: Tile }) {
 }
 
 export function SocialFeed() {
+  const { t, locale } = useI18n();
+
   return (
     <section className="relative border-t border-line py-24 md:py-32">
       <div className="shell">
@@ -76,18 +88,20 @@ export function SocialFeed() {
             rel="noreferrer"
             className="btn-ghost inline-flex items-center gap-2 px-5 py-3 font-mono text-[0.74rem] uppercase tracking-[0.14em]"
           >
-            Volg op Instagram <span aria-hidden>&rarr;</span>
+            {t("social.cta")} <span aria-hidden>&rarr;</span>
           </a>
         </Reveal>
 
         {/* Real widget mounts here (Behold / Elfsight). Fallback grid below. */}
-        <Reveal
-          className="mt-10 grid gap-3"
-          delay={0.05}
-        >
+        <Reveal className="mt-10 grid gap-3" delay={0.05}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {TILES.map((tile, i) => (
-              <FeedTile key={i} tile={tile} />
+              <FeedTile
+                key={i}
+                tile={tile}
+                caption={tile.caption[locale]}
+                follow={t("social.cta")}
+              />
             ))}
           </div>
         </Reveal>
